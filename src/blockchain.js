@@ -74,6 +74,7 @@ class Blockchain {
             block.hash = SHA256(JSON.stringify(block)).toString();
             if(block.hash){
                 this.chain.push(block)
+                this.validateChain()
                  resolve(block)
             }else{
                 reject({meesage:'error in creating block'})
@@ -198,12 +199,29 @@ class Blockchain {
     getStarsByWalletAddress (address) {
         let self = this;
         let stars = [];
-        return new Promise((resolve, reject) => {
-            let block = self.chain.filter(p => p.height === height)[0];
-            if(block){
-                resolve(block);
+        console.log(this.chain)
+        return new Promise(async (resolve, reject) => {
+            //  const data =  await
+            let starData
+            if(this.chain.length > 1 ){
+            await this.chain.map(async(block) =>{
+                    block.getBData().then((result) =>{
+                       starData = result // this will always return data from height > 0 
+                       if(starData.Owner === address) stars.push(starData)
+                     }).catch(err => {
+                        console.log(err);
+                    });
+             })
+            }else{
+                resolve("this is Gensis block");
+            }
+            // let block = self.chain.filter(block => block. === height);
+
+            if(stars.length > 0){
+               
+                resolve(stars);
             } else {
-                resolve(null);
+                resolve("No stars with this onwer ")
             }
         });
     }
@@ -231,13 +249,19 @@ class Blockchain {
                         errorMessage=`the previousBlockHash chain to this block  match with  the actual previous block `;
                     }
 
-                    const validated = block.validate() // validate block
-                    if(validated){
-                           validationMessage = "the blockchain is valid"
-                    }else{
-                         validationMessage = "the blockchain is not valide "
-
-                    }
+                   block.validate().then(result => {
+                        console.log(result);
+                        const validated = result
+                        if(validated){
+                            validationMessage = "the blockchain is valid"
+                     }else{
+                          validationMessage = "the blockchain is not valide "
+ 
+                     }
+                    }).catch(err => {
+                        console.log(err);
+                    }) // validate block
+                  
                     const errorDetail ={
                         hash:block.hash,
                         height: block.height,
@@ -251,7 +275,7 @@ class Blockchain {
             if(errorLog.length > 0){
                 resolve(errorLog)
             }else{
-                resolve("No block to vaalidate")
+                resolve("No block to validate")
             }
             
         });

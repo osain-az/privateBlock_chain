@@ -66,20 +66,19 @@ class Block {
      *     or Reject with an error.
      */
     getBData() {
-        const sel = this
+        const self = this
         return new Promise((resolve, reject) => {
         // Getting the encoded data saved in the Block
          const codedData = self.body
         // Parse the data to an object to be retrieve.
-        const decodedBody = new Buffer.from(codedData, 'hex');
-        
+        // const decodedBody = new Buffer.from(codedData, 'hex');
+        const decodedBody = hex2ascii(codedData)
         // Decoding the data to retrieve the JSON representation of the object
         const data = JSON.parse(decodedBody);
        
         // Parse the data to an object to be retrieve.
-
         // Resolve with the data if the object isn't the Genesis bloc
-        if(sel.height> 0){
+        if(self.height> 0){
             resolve(data)
         }else{
             reject("this is Gensis block")
